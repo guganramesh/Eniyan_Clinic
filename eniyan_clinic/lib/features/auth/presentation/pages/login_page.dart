@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_feedback.dart';
 import '../../../../shared/widgets/app_logo.dart';
 import '../widgets/auth_form_field.dart';
 import 'registration_page.dart';
@@ -94,7 +95,10 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () => showAppMessage(
+                      context,
+                      'Password recovery instructions requested.',
+                    ),
                     child: const Text('Forgot password?'),
                   ),
                 ),

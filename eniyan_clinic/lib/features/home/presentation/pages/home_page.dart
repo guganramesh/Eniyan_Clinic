@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/app_feedback.dart';
 import '../../../../shared/widgets/app_logo.dart';
+import '../../../appointments/presentation/pages/appointments_page.dart';
+import '../../../facilities/presentation/pages/facilities_page.dart';
+import '../../../blog/presentation/pages/blog_page.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
+
+const _homeDestinations = [
+  _NavDestination(Icons.home_rounded, 'Home'),
+  _NavDestination(Icons.calendar_month_outlined, 'Appointments'),
+  _NavDestination(Icons.local_hospital_outlined, 'Facilities'),
+  _NavDestination(Icons.menu_book_outlined, 'Blog'),
+  _NavDestination(Icons.person_outline_rounded, 'Profile'),
+];
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,22 +26,46 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  static const _destinations = [
-    _NavDestination(Icons.home_rounded, 'Home'),
-    _NavDestination(Icons.calendar_month_outlined, 'Appointments'),
-    _NavDestination(Icons.local_hospital_outlined, 'Facilities'),
-    _NavDestination(Icons.menu_book_outlined, 'Blog'),
-    _NavDestination(Icons.person_outline_rounded, 'Profile'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final isAppointments = _selectedIndex == 1;
+    final isFacilities = _selectedIndex == 2;
+    final isBlog = _selectedIndex == 3;
+    final isProfile = _selectedIndex == 4;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const _HomeAppBar(),
+      appBar: isAppointments
+          ? AppointmentsAppBar(onBack: () => setState(() => _selectedIndex = 0))
+          : isFacilities
+          ? FacilitiesAppBar(onBack: () => setState(() => _selectedIndex = 0))
+          : isBlog
+          ? BlogAppBar(onBack: () => setState(() => _selectedIndex = 0))
+          : isProfile
+          ? const ProfileAppBar()
+          : const _HomeAppBar(),
       body: _selectedIndex == 0
           ? const _DashboardContent()
-          : _PlaceholderContent(label: _destinations[_selectedIndex].label),
+          : isAppointments
+          ? const AppointmentsPage()
+          : isFacilities
+          ? const FacilitiesPage()
+          : isBlog
+          ? const BlogPage()
+          : isProfile
+          ? const ProfilePage()
+          : const _DashboardContent(),
+      floatingActionButton: isAppointments
+          ? FloatingActionButton.extended(
+              onPressed: () => showAppMessage(
+                context,
+                'Choose a doctor to book an appointment.',
+              ),
+              backgroundColor: AppColors.blue,
+              foregroundColor: AppColors.white,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Book Appointment'),
+            )
+          : null,
       bottomNavigationBar: _ClinicNavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
@@ -53,66 +90,109 @@ class _HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       toolbarHeight: 72,
       titleSpacing: 16,
-      title: const SizedBox(
-        width: 72,
-        height: 64,
-        child: Center(child: AppLogo(width: 60)),
-      ),
-      actions: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            IconButton(
-              onPressed: () {},
-              tooltip: 'Notifications',
-              icon: const Icon(
-                Icons.notifications_none_rounded,
-                color: AppColors.blue,
-                size: 30,
-              ),
-            ),
-            Positioned(
-              top: 5,
-              right: 4,
-              child: Container(
-                width: 18,
-                height: 18,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.red,
-                  shape: BoxShape.circle,
-                ),
-                child: const Text(
-                  '3',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 8),
-        Container(
-          width: 44,
-          height: 44,
-          margin: const EdgeInsets.only(right: 16),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.softBlue,
-            borderRadius: BorderRadius.circular(14),
+      title: const Row(
+        children: [
+          SizedBox(
+            width: 58,
+            height: 60,
+            child: Center(child: AppLogo(width: 52)),
           ),
-          child: const Text(
-            'RK',
-            style: TextStyle(
-              color: AppColors.blue,
-              fontWeight: FontWeight.w800,
+          SizedBox(width: 8),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Eniyan Clinics',
+                style: TextStyle(
+                  color: AppColors.blue,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                'Healthy Kids  ·  Brighter Future',
+                style: TextStyle(
+                  color: AppColors.blue,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: const [
+        _NotificationButton(),
+        SizedBox(width: 8),
+        _ProfileAvatar(),
+        SizedBox(width: 16),
+      ],
+    );
+  }
+}
+
+class _NotificationButton extends StatelessWidget {
+  const _NotificationButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          onPressed: () =>
+              showAppMessage(context, 'You have 3 new notifications.'),
+          tooltip: 'Notifications',
+          icon: const Icon(
+            Icons.notifications_none_rounded,
+            color: AppColors.blue,
+            size: 30,
+          ),
+        ),
+        Positioned(
+          top: 5,
+          right: 4,
+          child: Container(
+            width: 18,
+            height: 18,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.red,
+              shape: BoxShape.circle,
+            ),
+            child: const Text(
+              '3',
+              style: TextStyle(
+                color: AppColors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 44,
+      height: 44,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.softBlue,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Text(
+        'RK',
+        style: TextStyle(color: AppColors.blue, fontWeight: FontWeight.w800),
+      ),
     );
   }
 }
@@ -126,34 +206,34 @@ class _DashboardContent extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(22, 28, 22, 32),
       children: const [
         _GreetingHeader(),
-        SizedBox(height: 30),
-        _ChildProfileCard(),
-        SizedBox(height: 36),
-        _SectionTitle(title: 'Quick Actions'),
+        SizedBox(height: 18),
+        _WelcomeHero(),
         SizedBox(height: 16),
+        _ChildProfileCard(),
+        SizedBox(height: 26),
+        _SectionTitle(title: 'Quick Actions', actionLabel: 'See All'),
+        SizedBox(height: 12),
         _QuickActionsGrid(),
-        SizedBox(height: 36),
+        SizedBox(height: 28),
         _SectionTitle(title: 'Upcoming Appointment', actionLabel: 'See all'),
         SizedBox(height: 14),
-        _AppointmentCard(),
-        SizedBox(height: 36),
+        _AppointmentPreview(),
+        SizedBox(height: 28),
         _SectionTitle(title: 'Child Health', actionLabel: 'Details'),
         SizedBox(height: 14),
         _HealthSummary(),
-        SizedBox(height: 36),
+        SizedBox(height: 28),
         _SectionTitle(title: 'Growth Chart', actionLabel: 'Full chart'),
         SizedBox(height: 14),
         _GrowthCard(),
-        SizedBox(height: 36),
+        SizedBox(height: 28),
         _SectionTitle(title: 'Child Care Services'),
         SizedBox(height: 14),
         _ServicesRow(),
-        SizedBox(height: 36),
+        SizedBox(height: 28),
         _SectionTitle(title: 'Health Tips', actionLabel: 'View All'),
         SizedBox(height: 14),
         _HealthTips(),
-        SizedBox(height: 28),
-        _SocialFooter(),
       ],
     );
   }
@@ -164,29 +244,65 @@ class _GreetingHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Good Morning 👋',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(fontSize: 18, color: AppColors.gray),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Welcome to Eniyan Clinics',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: AppColors.blue,
-            fontSize: 30,
+    return Text(
+      'Good Morning 👋',
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 18),
+    );
+  }
+}
+
+class _WelcomeHero extends StatelessWidget {
+  const _WelcomeHero();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 138,
+      padding: const EdgeInsets.fromLTRB(20, 18, 16, 18),
+      decoration: BoxDecoration(
+        color: AppColors.blueLight,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.blueBorder),
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Welcome to\nEniyan Clinics',
+                  style: TextStyle(
+                    color: AppColors.ink,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w800,
+                    height: 1.05,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "Your child's health, all in one place.",
+                  style: TextStyle(color: AppColors.textBlueGray, fontSize: 13),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          "Your child's health, all in one place.",
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-      ],
+          Container(
+            width: 92,
+            height: 92,
+            decoration: const BoxDecoration(
+              color: AppColors.blueAvatar,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.child_care_rounded,
+              color: AppColors.blue,
+              size: 58,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -197,11 +313,11 @@ class _ChildProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.bluePale,
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.blueBorder),
-        borderRadius: BorderRadius.circular(22),
       ),
       child: Row(
         children: [
@@ -209,7 +325,7 @@ class _ChildProfileCard extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: const BoxDecoration(
-              color: AppColors.white,
+              color: AppColors.softBlue,
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -218,7 +334,7 @@ class _ChildProfileCard extends StatelessWidget {
               size: 44,
             ),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 16),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,21 +348,21 @@ class _ChildProfileCard extends StatelessWidget {
                     letterSpacing: 1.1,
                   ),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 6),
                 Text(
                   'Arjun Kumar',
                   style: TextStyle(
                     color: AppColors.ink,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 7),
+                SizedBox(height: 6),
                 Text(
                   '6 Years · Height 118cm · Weight 22kg',
-                  style: TextStyle(color: AppColors.gray, fontSize: 14),
+                  style: TextStyle(color: AppColors.gray, fontSize: 13),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 8),
                 Text(
                   'View Child Profile  →',
                   style: TextStyle(
@@ -257,6 +373,7 @@ class _ChildProfileCard extends StatelessWidget {
               ],
             ),
           ),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.blue),
         ],
       ),
     );
@@ -279,7 +396,7 @@ class _SectionTitle extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.ink,
               fontSize: 21,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -307,35 +424,35 @@ class _QuickActionsGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.22,
+      childAspectRatio: 1.25,
       children: const [
         _QuickAction(
-          icon: Icons.calendar_month_outlined,
-          title: 'Book Appointment',
-          subtitle: 'Find the right care',
-          color: AppColors.softBlue,
-          iconColor: AppColors.blue,
+          Icons.calendar_month_outlined,
+          'Book Appointment',
+          'Find the right care',
+          AppColors.softBlue,
+          AppColors.blue,
         ),
         _QuickAction(
-          icon: Icons.menu_book_outlined,
-          title: 'My Appointments',
-          subtitle: 'Stay on track',
-          color: AppColors.softGreen,
-          iconColor: AppColors.green,
+          Icons.menu_book_outlined,
+          'My Appointments',
+          'Stay on track',
+          AppColors.softGreen,
+          AppColors.green,
         ),
         _QuickAction(
-          icon: Icons.show_chart_rounded,
-          title: 'Growth Chart',
-          subtitle: 'See progress',
-          color: AppColors.purpleSoft,
-          iconColor: AppColors.purple,
+          Icons.show_chart_rounded,
+          'Growth Chart',
+          'See progress',
+          AppColors.purpleSoft,
+          AppColors.purple,
         ),
         _QuickAction(
-          icon: Icons.person_outline_rounded,
-          title: 'Child Profile',
-          subtitle: 'All details',
-          color: AppColors.orangeSoft,
-          iconColor: AppColors.orangeDark,
+          Icons.person_outline_rounded,
+          'Child Profile',
+          'All details',
+          AppColors.orangeSoft,
+          AppColors.orangeDark,
         ),
       ],
     );
@@ -343,13 +460,13 @@ class _QuickActionsGrid extends StatelessWidget {
 }
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.iconColor,
-  });
+  const _QuickAction(
+    this.icon,
+    this.title,
+    this.subtitle,
+    this.color,
+    this.iconColor,
+  );
 
   final IconData icon;
   final String title;
@@ -360,10 +477,10 @@ class _QuickAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(17),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +491,7 @@ class _QuickAction extends StatelessWidget {
             title,
             style: TextStyle(color: iconColor, fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 7),
+          const SizedBox(height: 6),
           Text(
             subtitle,
             style: const TextStyle(color: AppColors.gray, fontSize: 13),
@@ -385,8 +502,8 @@ class _QuickAction extends StatelessWidget {
   }
 }
 
-class _AppointmentCard extends StatelessWidget {
-  const _AppointmentCard();
+class _AppointmentPreview extends StatelessWidget {
+  const _AppointmentPreview();
 
   @override
   Widget build(BuildContext context) {
@@ -418,7 +535,7 @@ class _AppointmentCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 13),
+              const SizedBox(width: 12),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +545,7 @@ class _AppointmentCard extends StatelessWidget {
                       style: TextStyle(
                         color: AppColors.ink,
                         fontSize: 18,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     SizedBox(height: 5),
@@ -439,10 +556,10 @@ class _AppointmentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _StatusPill(),
+              const _StatusPill(),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           const Wrap(
             spacing: 12,
             runSpacing: 8,
@@ -452,20 +569,19 @@ class _AppointmentCard extends StatelessWidget {
               _AppointmentMeta(Icons.videocam_outlined, 'In-person'),
             ],
           ),
-          const SizedBox(height: 17),
+          const SizedBox(height: 16),
           Row(
             children: [
               FilledButton(
-                onPressed: () {},
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.blue,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                ),
+                onPressed: () =>
+                    showAppMessage(context, 'Appointment details opened.'),
+                style: FilledButton.styleFrom(backgroundColor: AppColors.blue),
                 child: const Text('View'),
               ),
               const SizedBox(width: 10),
               OutlinedButton(
-                onPressed: () {},
+                onPressed: () =>
+                    showAppMessage(context, 'Reschedule options opened.'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.blue,
                   side: const BorderSide(color: AppColors.blue),
@@ -491,7 +607,7 @@ class _StatusPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         child: Text(
           'Upcoming',
           style: TextStyle(
@@ -512,38 +628,31 @@ class _AppointmentMeta extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 17, color: AppColors.gray),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: const TextStyle(color: AppColors.gray, fontSize: 13),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 16, color: AppColors.gray),
+      const SizedBox(width: 5),
+      Text(label, style: const TextStyle(color: AppColors.gray, fontSize: 13)),
+    ],
+  );
 }
 
 class _HealthSummary extends StatelessWidget {
   const _HealthSummary();
 
   @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        Expanded(child: _HealthMetric('Height', '118cm')),
-        SizedBox(width: 8),
-        Expanded(child: _HealthMetric('Weight', '22kg')),
-        SizedBox(width: 8),
-        Expanded(child: _HealthMetric('Last Checkup', '05 Sep')),
-        SizedBox(width: 8),
-        Expanded(child: _HealthMetric('Next Visit', '18 Sep')),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => const Row(
+    children: [
+      Expanded(child: _HealthMetric('Height', '118cm')),
+      SizedBox(width: 8),
+      Expanded(child: _HealthMetric('Weight', '22kg')),
+      SizedBox(width: 8),
+      Expanded(child: _HealthMetric('Last Checkup', '05 Sep')),
+      SizedBox(width: 8),
+      Expanded(child: _HealthMetric('Next Visit', '18 Sep')),
+    ],
+  );
 }
 
 class _HealthMetric extends StatelessWidget {
@@ -553,113 +662,110 @@ class _HealthMetric extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(color: AppColors.gray, fontSize: 12),
+  Widget build(BuildContext context) => Container(
+    height: 72,
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.gray, fontSize: 12),
+        ),
+        Text(
+          value,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppColors.ink,
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
           ),
-          Text(
-            value,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: AppColors.ink,
-              fontWeight: FontWeight.w800,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
 
 class _GrowthCard extends StatelessWidget {
   const _GrowthCard();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Arjun's height is tracking beautifully",
-            style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            height: 112,
-            width: double.infinity,
-            child: CustomPaint(painter: _GrowthChartPainter()),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'View Full Growth Chart  →',
-            style: TextStyle(
-              color: AppColors.blue,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Arjun's height is tracking beautifully",
+          style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 100,
+          width: double.infinity,
+          child: CustomPaint(painter: _GrowthChartPainter()),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'View Full Growth Chart  →',
+          style: TextStyle(color: AppColors.blue, fontWeight: FontWeight.w800),
+        ),
+      ],
+    ),
+  );
 }
 
 class _GrowthChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final gridPaint = Paint()
+    final grid = Paint()
       ..color = AppColors.blueBorderLight
       ..strokeWidth = 1;
-    final linePaint = Paint()
+    final line = Paint()
       ..color = AppColors.blue
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke;
-
-    for (var index = 0; index < 6; index++) {
-      final y = index * size.height / 5;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    for (var i = 0; i < 6; i++) {
+      canvas.drawLine(
+        Offset(0, i * size.height / 5),
+        Offset(size.width, i * size.height / 5),
+        grid,
+      );
     }
-    for (var index = 0; index < 8; index++) {
-      final x = index * size.width / 7;
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    for (var i = 0; i < 8; i++) {
+      canvas.drawLine(
+        Offset(i * size.width / 7, 0),
+        Offset(i * size.width / 7, size.height),
+        grid,
+      );
     }
-
     final path = Path()..moveTo(0, size.height * .72);
     path.cubicTo(
-      size.width * .18,
+      size.width * .2,
       size.height * .62,
-      size.width * .27,
-      size.height * .58,
-      size.width * .43,
-      size.height * .38,
+      size.width * .3,
+      size.height * .54,
+      size.width * .46,
+      size.height * .34,
     );
     path.cubicTo(
-      size.width * .58,
-      size.height * .2,
-      size.width * .74,
-      size.height * .27,
+      size.width * .64,
+      size.height * .18,
+      size.width * .8,
+      size.height * .24,
       size.width,
       size.height * .1,
     );
-    canvas.drawPath(path, linePaint);
+    canvas.drawPath(path, line);
   }
 
   @override
@@ -670,39 +776,37 @@ class _ServicesRow extends StatelessWidget {
   const _ServicesRow();
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 140,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: const [
-          _ServiceCard(
-            Icons.child_care_rounded,
-            'Pediatrics',
-            'Gentle everyday care',
-            AppColors.softBlue,
-            AppColors.blue,
-          ),
-          SizedBox(width: 12),
-          _ServiceCard(
-            Icons.favorite_border_rounded,
-            'Neonatal Care',
-            'Expert newborn support',
-            AppColors.softGreen,
-            AppColors.green,
-          ),
-          SizedBox(width: 12),
-          _ServiceCard(
-            Icons.show_chart_rounded,
-            'Asthma',
-            'Breathe easier',
-            AppColors.purpleSoft,
-            AppColors.purple,
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => SizedBox(
+    height: 132,
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      children: const [
+        _ServiceCard(
+          Icons.child_care_rounded,
+          'Pediatrics',
+          'Gentle everyday care',
+          AppColors.softBlue,
+          AppColors.blue,
+        ),
+        SizedBox(width: 12),
+        _ServiceCard(
+          Icons.favorite_border_rounded,
+          'Neonatal Care',
+          'Expert newborn support',
+          AppColors.softGreen,
+          AppColors.green,
+        ),
+        SizedBox(width: 12),
+        _ServiceCard(
+          Icons.show_chart_rounded,
+          'Asthma',
+          'Breathe easier',
+          AppColors.purpleSoft,
+          AppColors.purple,
+        ),
+      ],
+    ),
+  );
 }
 
 class _ServiceCard extends StatelessWidget {
@@ -721,69 +825,65 @@ class _ServiceCard extends StatelessWidget {
   final Color iconColor;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 178,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            backgroundColor: color,
-            foregroundColor: iconColor,
-            child: Icon(icon),
+  Widget build(BuildContext context) => Container(
+    width: 178,
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          backgroundColor: color,
+          foregroundColor: iconColor,
+          child: Icon(icon),
+        ),
+        const Spacer(),
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppColors.ink,
+            fontWeight: FontWeight.w800,
           ),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.ink,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            subtitle,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.gray, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(height: 5),
+        Text(
+          subtitle,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: AppColors.gray, fontSize: 13),
+        ),
+      ],
+    ),
+  );
 }
 
 class _HealthTips extends StatelessWidget {
   const _HealthTips();
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: const [
-        Expanded(
-          child: _TipCard(
-            'Nutrition',
-            'Building a happy, healthy plate for your child',
-            '12 Sep 2026',
-            AppColors.blueLight,
-          ),
+  Widget build(BuildContext context) => const Row(
+    children: [
+      Expanded(
+        child: _TipCard(
+          'Nutrition',
+          'Building a happy, healthy plate for your child',
+          '12 Sep 2026',
+          AppColors.blueLight,
         ),
-        SizedBox(width: 12),
-        Expanded(
-          child: _TipCard(
-            'Child Health',
-            'The little rituals that make bedtime easier',
-            '08 Sep 2026',
-            AppColors.purpleLight,
-          ),
+      ),
+      SizedBox(width: 12),
+      Expanded(
+        child: _TipCard(
+          'Child Health',
+          'The little rituals that make bedtime easier',
+          '08 Sep 2026',
+          AppColors.purpleLight,
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }
 
 class _TipCard extends StatelessWidget {
@@ -795,103 +895,51 @@ class _TipCard extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(height: 70, color: color),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  category,
-                  style: const TextStyle(
-                    color: AppColors.blue,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  title,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.ink,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  date,
-                  style: const TextStyle(color: AppColors.gray, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SocialFooter extends StatelessWidget {
-  const _SocialFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(18),
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Stay Connected',
-          style: TextStyle(
-            color: AppColors.ink,
-            fontSize: 19,
-            fontWeight: FontWeight.w500,
+        Container(height: 62, color: color),
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                category,
+                style: const TextStyle(
+                  color: AppColors.blue,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 7),
+              Text(
+                title,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w800,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                date,
+                style: const TextStyle(color: AppColors.gray, fontSize: 12),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            _SocialIcon(Icons.camera_alt_outlined, AppColors.pink),
-            SizedBox(width: 14),
-            _SocialIcon(Icons.facebook_rounded, AppColors.blue),
-            SizedBox(width: 14),
-            _SocialIcon(Icons.play_arrow_rounded, AppColors.red),
-            SizedBox(width: 14),
-            _SocialIcon(Icons.chat_bubble_outline_rounded, AppColors.green),
-          ],
         ),
       ],
-    );
-  }
-}
-
-class _SocialIcon extends StatelessWidget {
-  const _SocialIcon(this.icon, this.color);
-
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: 24,
-      backgroundColor: color,
-      foregroundColor: AppColors.white,
-      child: Icon(icon, size: 26),
-    );
-  }
+    ),
+  );
 }
 
 class _ClinicNavigationBar extends StatelessWidget {
@@ -904,51 +952,36 @@ class _ClinicNavigationBar extends StatelessWidget {
   final ValueChanged<int> onDestinationSelected;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        border: Border(top: BorderSide(color: AppColors.borderLight)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: NavigationBar(
-          selectedIndex: selectedIndex,
-          onDestinationSelected: onDestinationSelected,
-          backgroundColor: AppColors.white,
-          surfaceTintColor: AppColors.white,
-          elevation: 0,
-          height: 76,
-          indicatorColor: AppColors.softBlue,
-          labelTextStyle: WidgetStatePropertyAll(
-            TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          ),
-          destinations: _HomePageState._destinations
-              .map(
-                (destination) => NavigationDestination(
-                  icon: Icon(destination.icon),
-                  selectedIcon: Icon(destination.icon),
-                  label: destination.label,
-                ),
-              )
-              .toList(),
+  Widget build(BuildContext context) => Container(
+    decoration: const BoxDecoration(
+      color: AppColors.white,
+      border: Border(top: BorderSide(color: AppColors.borderLight)),
+    ),
+    child: SafeArea(
+      top: false,
+      child: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: onDestinationSelected,
+        backgroundColor: AppColors.white,
+        surfaceTintColor: AppColors.white,
+        elevation: 0,
+        height: 76,
+        indicatorColor: AppColors.softBlue,
+        labelTextStyle: const WidgetStatePropertyAll(
+          TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         ),
+        destinations: _homeDestinations
+            .map(
+              (destination) => NavigationDestination(
+                icon: Icon(destination.icon),
+                selectedIcon: Icon(destination.icon),
+                label: destination.label,
+              ),
+            )
+            .toList(),
       ),
-    );
-  }
-}
-
-class _PlaceholderContent extends StatelessWidget {
-  const _PlaceholderContent({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(label, style: Theme.of(context).textTheme.headlineMedium),
-    );
-  }
+    ),
+  );
 }
 
 class _NavDestination {
