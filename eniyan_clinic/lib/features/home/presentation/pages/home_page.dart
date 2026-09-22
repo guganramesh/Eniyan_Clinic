@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+<<<<<<< HEAD
+import '../../../profile/presentation/pages/profile_page.dart';
+=======
 import '../../../../shared/widgets/app_feedback.dart';
+>>>>>>> b5e414ea975c2a622968eeaf6a966bd990b9358f
 import '../../../../shared/widgets/app_logo.dart';
 import '../../../appointments/presentation/pages/appointments_page.dart';
 import '../../../facilities/presentation/pages/facilities_page.dart';
@@ -34,6 +38,16 @@ class _HomePageState extends State<HomePage> {
     final isProfile = _selectedIndex == 4;
     return Scaffold(
       backgroundColor: AppColors.background,
+<<<<<<< HEAD
+      appBar: _selectedIndex == 4
+          ? _ProfileAppBar(onBack: () => setState(() => _selectedIndex = 0))
+          : const _HomeAppBar(),
+      body: _selectedIndex == 0
+          ? const _DashboardContent()
+          : _selectedIndex == 4
+          ? const ProfilePage()
+          : _PlaceholderContent(label: _destinations[_selectedIndex].label),
+=======
       appBar: isAppointments
           ? AppointmentsAppBar(onBack: () => setState(() => _selectedIndex = 0))
           : isFacilities
@@ -66,12 +80,100 @@ class _HomePageState extends State<HomePage> {
               label: const Text('Book Appointment'),
             )
           : null,
+>>>>>>> b5e414ea975c2a622968eeaf6a966bd990b9358f
       bottomNavigationBar: _ClinicNavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
           setState(() => _selectedIndex = index);
         },
       ),
+    );
+  }
+}
+
+class _ProfileAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _ProfileAppBar({required this.onBack});
+
+  final VoidCallback onBack;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(58);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: AppColors.white,
+      surfaceTintColor: AppColors.white,
+      elevation: 0,
+      toolbarHeight: 58,
+      leading: IconButton(
+        onPressed: onBack,
+        tooltip: 'Back',
+        icon: const Icon(Icons.arrow_back_rounded, color: AppColors.blue),
+      ),
+      title: const Text(
+        'Profile',
+        style: TextStyle(
+          color: AppColors.ink,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      actions: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              onPressed: () {},
+              tooltip: 'Notifications',
+              icon: const Icon(
+                Icons.notifications_none_rounded,
+                color: AppColors.blue,
+                size: 23,
+              ),
+            ),
+            Positioned(
+              top: 6,
+              right: 5,
+              child: Container(
+                width: 14,
+                height: 14,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: AppColors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: const Text(
+                  '3',
+                  style: TextStyle(
+                    color: AppColors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          width: 32,
+          height: 32,
+          margin: const EdgeInsets.only(left: 4, right: 16),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.softBlue,
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: const Text(
+            'RK',
+            style: TextStyle(
+              color: AppColors.blue,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -56,6 +56,13 @@ void main() {
     expect(find.text('Facilities'), findsOneWidget);
     expect(find.text('Blog'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
+
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rajesh Kumar'), findsOneWidget);
+    expect(find.text('Personal Information'), findsOneWidget);
+    expect(find.text('Terms & Conditions'), findsOneWidget);
   });
 
   testWidgets('registers a new family account', (WidgetTester tester) async {
