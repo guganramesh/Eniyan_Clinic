@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import 'app_feedback.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({super.key, required this.title, this.actionLabel});
@@ -17,7 +18,7 @@ class SectionHeader extends StatelessWidget {
         ),
         if (actionLabel != null)
           TextButton(
-            onPressed: () {},
+            onPressed: () => showAppMessage(context, '$actionLabel selected.'),
             child: Text(
               actionLabel!,
               style: const TextStyle(color: AppColors.blue),

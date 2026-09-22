@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:eniyan_clinic/app/app.dart';
 import 'package:eniyan_clinic/features/auth/presentation/pages/registration_page.dart';
+import 'package:eniyan_clinic/features/home/presentation/pages/home_page.dart';
 
 void main() {
   testWidgets('shows splash, welcome, login, and home flow', (
@@ -50,7 +51,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Good Morning 👋'), findsOneWidget);
-    expect(find.text('Welcome to Eniyan Clinics'), findsOneWidget);
+    expect(find.text('Welcome to\nEniyan Clinics'), findsOneWidget);
     expect(find.text('Appointments'), findsOneWidget);
     expect(find.text('Facilities'), findsOneWidget);
     expect(find.text('Blog'), findsOneWidget);
@@ -82,5 +83,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Good Morning 👋'), findsOneWidget);
+  });
+
+  testWidgets('opens the appointments tab', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
+
+    await tester.tap(find.text('Appointments').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('My Appointments'), findsOneWidget);
+    expect(find.text('Upcoming'), findsNWidgets(3));
+    expect(find.text('Completed'), findsOneWidget);
+    expect(find.text('Cancelled'), findsOneWidget);
+    expect(find.text('Dr. Elamparithi'), findsOneWidget);
+    expect(find.text('Book Appointment'), findsOneWidget);
+  });
+
+  testWidgets('opens the facilities tab', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
+
+    await tester.tap(find.text('Facilities').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Our Facilities'), findsOneWidget);
+    expect(find.text('Comfortable care for your child.'), findsOneWidget);
+    expect(find.text('Pediatric Consultation'), findsOneWidget);
+    expect(find.text('Neonatal Care'), findsOneWidget);
+    expect(find.text('Vaccination'), findsOneWidget);
+    expect(find.text('Emergency Support'), findsOneWidget);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -1000));
+    await tester.pumpAndSettle();
+    expect(find.text('Have a question?'), findsOneWidget);
+  });
+
+  testWidgets('opens the blog tab', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: HomePage()));
+
+    await tester.tap(find.text('Blog').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Health & Wellness'), findsOneWidget);
+    expect(
+      find.text('Helpful guidance for\nhealthier, happier families.'),
+      findsOneWidget,
+    );
+    expect(find.text('FEATURED ARTICLE'), findsOneWidget);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.pumpAndSettle();
+    expect(find.text('Latest articles'), findsOneWidget);
+    expect(
+      find.text('Building a happy, healthy plate for your child'),
+      findsOneWidget,
+    );
   });
 }
